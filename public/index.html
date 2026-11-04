@@ -81,6 +81,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* top right */
 .me{position:absolute;right:14px;top:max(14px,env(safe-area-inset-top,0px));display:flex;gap:8px;align-items:center}
 .me .btn{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;font-weight:500;border-radius:12px}
+.me #gameMute{width:42px;height:42px;justify-content:center;padding:0;font-size:19px}
 .btn:hover{border-color:var(--uniform)}
 .avatar-dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;background:var(--uniform)}
 .menu{position:absolute;right:0;top:calc(100% + 8px);width:250px;padding:12px;display:none}
@@ -232,7 +233,6 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
 .tvform .primary{padding:9px 12px;border-radius:10px;background:var(--uniform);color:#fff;font-weight:600;font-size:13px}
 .tvform .primary:disabled{opacity:.5;cursor:not-allowed}
 .tvform small{font-size:12px;color:var(--ink-soft);line-height:1.4}
-.tvsound{display:flex;gap:6px;align-items:center;font-size:12px}
 .tvhint{font-size:12px;color:var(--ink-soft);margin-top:-4px}
 .tv-admin{display:flex;flex-direction:column;gap:5px;padding-top:2px;border-top:1px solid var(--line)}
 .tv-admin button{padding:8px 10px;border-radius:9px;border:1px solid color-mix(in srgb,var(--dnd) 55%,var(--line));background:transparent;color:var(--dnd);font-size:12px;font-weight:700}
@@ -318,6 +318,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
   </div>
 
   <div class="me">
+    <button class="btn glass" id="gameMute" type="button" aria-label="Tắt tiếng game" aria-pressed="false" title="Tắt tiếng game">🔊</button>
     <div style="position:relative">
       <button class="btn glass" id="meBtn" aria-haspopup="true" aria-expanded="false"><span class="avatar-dot" id="meInit">B</span><span class="lbl" id="meName">Bạn</span></button>
       <div class="menu glass" id="meMenu">
@@ -355,7 +356,6 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
     <span class="pulse red" aria-hidden="true"></span>
     <div><b id="chairTitle">Đang họp với Chủ tịch</b><small id="chairTime">0:00</small></div>
     <button id="chairPlay" class="primary" hidden>Bấm để nghe</button>
-    <button id="chairMute">Tắt tiếng</button>
     <button id="chairEnd" hidden>Kết thúc</button>
   </div>
   <audio id="chairAudio" preload="none"></audio>
@@ -377,8 +377,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
       <button id="tvSendYt" class="primary">Xếp hàng chiếu</button>
       <small>Nếu tổ chức chặn phát YouTube trong trang, TV sẽ hiện nút mở video trên YouTube đúng đoạn đang chiếu.</small>
     </div>
-    <label class="tvsound"><input type="checkbox" id="tvMute"> Tắt tiếng TV trên máy tôi</label>
-    <small class="tvhint">TV có tiếng. Khi họp với Chủ tịch, mọi TV tự tắt tiếng.</small>
+    <small class="tvhint">Dùng nút âm thanh ở góc trên để tắt hoặc bật toàn bộ tiếng game.</small>
     <div class="tv-admin" id="tvAdminActions" hidden>
       <button type="button" id="tvClearAll">Khôi phục TV mặc định</button>
       <small>Xóa toàn bộ hàng chờ và nội dung đang chiếu trên tất cả TV.</small>
@@ -2919,7 +2918,6 @@ function chairLive(){return chair.active&&!!chair.audio&&chairElapsed()<CHAIR_DU
 let audioAtSent=0,chairEnding=0;
 function gatherCount(){let n=0,ok=0;for(const a of avatars.values())if(a.gatherIdx!=null){n++;if(!a.anim)ok++;}const chOk=chairFig&&!chairFig.anim;return {n,ok,chOk};}
 function fmtT(s){s=Math.max(0,Math.floor(s));const m=Math.floor(s/60),ss=s%60;return `${m}:${String(ss).padStart(2,'0')}`;}
-let chairMuted=false;
 function applyChair(){
   const live=chairLive();
   if(live&&!gatherActive){
@@ -2955,8 +2953,9 @@ function applyChair(){
       stopFootsteps();$('chairTitle').textContent='Đang họp với Chủ tịch';
       if(chairFig&&!chairFig.anim){chairFig.talk=1;const cp=chairFig.root.position;for(const a of avatars.values())if(a.gatherIdx!=null&&!a.anim){a.lookAt=[cp.x,cp.z];a.nod=Math.random()<.02?!a.nod:a.nod;}}
       if(Math.abs(chairAudio.currentTime-t)>2&&chairAudio.readyState>0){try{chairAudio.currentTime=t;}catch(e){}}
-      chairAudio.muted=chairMuted;chairAudio.volume=1;
-      if(chairAudio.paused&&!chairMuted){chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>{$('chairPlay').hidden=false;});}
+      chairAudio.muted=gameMuted;chairAudio.volume=1;
+      if(gameMuted)$('chairPlay').hidden=true;
+      if(chairAudio.paused&&!gameMuted){chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>{$('chairPlay').hidden=false;});}
       $('chairTime').textContent=`${fmtT(t)} / ${fmtT(CHAIR_DURATION)}`;
     }
   }else if(chairAudio.getAttribute('src')){chairAudio.pause();chairAudio.removeAttribute('src');chairAudio.load();} // silence outside the meeting
@@ -2967,8 +2966,7 @@ function applyChair(){
 }
 chairAudio.addEventListener('loadedmetadata',()=>{if(chairLive()&&chairElapsed()>=0){try{chairAudio.currentTime=chairElapsed();}catch(e){}}});
 setInterval(applyChair,1000);
-$('chairPlay').onclick=()=>{chairMuted=false;chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>toast('Trình duyệt chưa cho phát âm thanh, bấm lại lần nữa nhé'));};
-$('chairMute').onclick=()=>{chairMuted=!chairMuted;chairAudio.muted=chairMuted;$('chairMute').textContent=chairMuted?'Bật tiếng':'Tắt tiếng';if(!chairMuted)chairAudio.play().catch(()=>{});};
+$('chairPlay').onclick=()=>{if(gameMuted)return;chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>toast('Trình duyệt chưa cho phát âm thanh, bấm lại lần nữa nhé'));};
 async function setChair(on){
   if(!chairDb||!canEditLayout)return;
   if(on&&!chair.audio){toast('Chưa có đoạn ghi âm để phát');return;}
@@ -3049,9 +3047,25 @@ function setTvSuppressed(value){
   if(tvSuppressed)for(const id of [...casts.keys()])stopCast(id);
   renderTvPanel();
 }
-/* sound: TVs play with sound unless you mute them, and everything goes quiet for the chairman */
-let tvMuted=false;
-function tvSilent(){return tvMuted||gatherActive;}
+/* One local switch controls every sound source in the game. */
+let gameMuted=store.get('gameMuted',store.get('tvMuted',false))===true;
+let sfxCtx=null,footstepTimer=null,applauseTimer=null;
+function tvSilent(){return gameMuted||gatherActive;}
+function setGameMuted(value){
+  gameMuted=!!value;store.set('gameMuted',gameMuted);
+  const button=$('gameMute'),label=gameMuted?'Bật tiếng game':'Tắt tiếng game';
+  button.textContent=gameMuted?'🔇':'🔊';button.setAttribute('aria-label',label);
+  button.setAttribute('aria-pressed',String(gameMuted));button.title=label;
+  chairAudio.muted=gameMuted;
+  if(gameMuted)$('chairPlay').hidden=true;
+  if(sfxCtx)(gameMuted?sfxCtx.suspend():sfxCtx.resume()).catch(()=>{});
+  for(const c of casts.values()){
+    if(c.kind==='video'&&c.el)c.el.muted=tvSilent();
+    if(c.iframe){c.silent=tvSilent();ytCmd(c,c.silent?'mute':'unMute');}
+  }
+}
+$('gameMute').onclick=()=>setGameMuted(!gameMuted);
+setGameMuted(gameMuted);
 /* YouTube plays in a real player placed exactly over the TV screen; the 3D view leaves a hole there */
 let cssRenderer=null,cssScene=null,ytBlocked=false;
 document.addEventListener('securitypolicyviolation',e=>{if(/youtube/.test(String(e.blockedURI||'')+String(e.violatedDirective||''))&&/frame/.test(String(e.violatedDirective||'')+String(e.effectiveDirective||''))){ytBlocked=true;}});
@@ -3246,8 +3260,6 @@ $('tvSendYt').onclick=async()=>{
 };
 function tvTab(t){$('tvTabFile').setAttribute('aria-selected',t==='file');$('tvTabYt').setAttribute('aria-selected',t==='yt');$('tvFormFile').hidden=t!=='file';$('tvFormYt').hidden=t!=='yt';}
 $('tvTabFile').onclick=()=>tvTab('file');$('tvTabYt').onclick=()=>tvTab('yt');
-$('tvMute').onchange=e=>{tvMuted=e.target.checked;store.set('tvMuted',tvMuted);};
-tvMuted=store.get('tvMuted',false)===true;$('tvMute').checked=tvMuted;
 $('tvOpenBtn').onclick=()=>openTv();
 
 /* ---------- receiving visitors: a small group comes in through the main door, talks in the lobby, then the bosses show them round ---------- */
@@ -3257,13 +3269,13 @@ const BOSSES=[['Đồng chí Tuân','#6e9eff'],['Đồng chí Long','#6e9eff']];
 const GUESTS=['Khách Nam','Khách Vy','Khách Minh','Khách Thảo','Khách Bảo'];
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function arrived(list,maxMs){const t0=performance.now();while(performance.now()-t0<(maxMs||40000)){if(list.every(v=>!v.av.anim))return;await wait(200);}}
-let sfxCtx=null,footstepTimer=null,applauseTimer=null;
 function getSfxContext(){
   if(sfxCtx)return sfxCtx;
   const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
   try{sfxCtx=new C();}catch(e){return null;}return sfxCtx;
 }
 function noiseBurst(kind){
+  if(gameMuted)return;
   const c=getSfxContext();if(!c)return;
   if(c.state==='suspended')c.resume().catch(()=>{});
   const dur=kind==='step'?.075:.065,n=Math.max(1,Math.floor(c.sampleRate*dur));

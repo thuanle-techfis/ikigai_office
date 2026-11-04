@@ -52,6 +52,7 @@ Mọi người thấy nhau đi lại, ngồi, trò chuyện, nhảy và vỗ tay
 - **Hồ sơ nhân vật:** sau khi tạo hồ sơ, tên và giới tính được khóa; người dùng chỉ có thể đổi trang phục. Nhân vật hỗ trợ các kiểu áo sơ mi ngắn tay, sơ mi dài tay và vest.
 - **Tên hiển thị:** mỗi người tạo hồ sơ trong menu ở góc trên bên phải. Tên/giới tính được máy chủ giữ ổn định giữa các phiên; trang phục vẫn là tùy chọn riêng.
 - **Di chuyển và bàn làm việc:** đoàn khách di chuyển theo đội hình cùng khu vực, có âm thanh bước chân; khi nhân vật ngồi vào bàn, màn hình trên bàn sẽ bật và tắt khi rời ghế.
+- **Âm thanh:** nút loa ở góc trên tắt hoặc bật toàn bộ tiếng game trên máy của bạn, gồm TV, cuộc họp, bước chân và vỗ tay.
 - **Chiếu lên TV:** không có trường chọn số phút trong giao diện; ảnh dùng thời lượng mặc định, video chạy theo độ dài tệp và YouTube dùng thời lượng mặc định của hệ thống.
 - **Tiếp khách:** toàn bộ đoàn được giữ trong sảnh; khi bắt đầu tiếp khách, mọi nội dung đang chiếu trên TV được dừng và TV trở về trạng thái ban đầu.
 - **Khôi phục TV:** super admin có nút `Khôi phục TV mặc định` để xóa toàn bộ hàng chờ trình chiếu trên mọi TV và trả TV về trạng thái ban đầu.
