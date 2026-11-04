@@ -72,6 +72,16 @@ Mọi người thấy nhau đi lại, ngồi, trò chuyện, nhảy và vỗ tay
 - **Về lại mặt bằng ban đầu:** đóng máy chủ, chép đè `data/db.json` từ bản sao lưu.
 - Trong `data/db.json` còn hai bản mặt bằng cũ (`backup-truoc-khi-sua`, `backup-ban-claude-1`) để đối chiếu.
 
+## Mô phỏng 20 người chơi online
+
+Chạy trong thư mục dự án:
+
+```bash
+python scripts/simulate_players.py --players 20 --duration 120 --interval 2
+```
+
+Mở địa chỉ `http://127.0.0.1:8123` trong lúc chương trình chạy, tạo tài khoản thử để vào xem bot di chuyển cùng bạn. Mỗi bot có tài khoản và kết nối sự kiện riêng. Chương trình kiểm tra sự hiện diện của cả nhóm, chat chung và tin nhắn riêng; cuối cùng in `PASS` hoặc báo lỗi. Máy chủ thử nghiệm chỉ lắng nghe trên máy này, dùng cơ sở dữ liệu tạm và tự xóa tài khoản thử khi kết thúc. Có thể đổi cổng bằng `--port`.
+
 ## Cấu trúc
 
 ```
