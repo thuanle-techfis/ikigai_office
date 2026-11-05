@@ -171,7 +171,7 @@ def main():
         server.super_admin_uid = None
         server.save_db()
 
-        httpd = ThreadingHTTPServer(('127.0.0.1', args.port), server.Handler)
+        httpd = server.OfficeServer(('127.0.0.1', args.port), server.Handler)
         httpd.daemon_threads = True
         base_url = f'http://127.0.0.1:{httpd.server_port}'
         threading.Thread(target=httpd.serve_forever, name='office-server', daemon=True).start()

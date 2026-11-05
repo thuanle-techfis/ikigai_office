@@ -2,3 +2,7 @@ __pycache__/
 *.py[cod]
 data/blobs/*
 *.zip
+data-prod/
+data/sessions.json
+data/*.tmp
+audio-originals/

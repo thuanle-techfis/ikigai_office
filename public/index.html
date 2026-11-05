@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Văn phòng tầng 8</title>
+<title>ikigai office</title>
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
 :root{
@@ -106,6 +106,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .menu label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px}
 .menu input[type=text]{width:100%;font:inherit;font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel-solid);color:var(--ink)}
 .menu .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;margin-top:10px}
+.menu .row[hidden]{display:none}
 .profile-lock{width:100%;margin:4px 0 8px;padding:8px 10px;border:1px solid var(--uniform);border-radius:9px;background:var(--uniform);color:#fff;font-size:12px;font-weight:700}
 .profile-lock[hidden]{display:none}
 .profile-note{margin:0 0 8px;font-size:11px;color:var(--ink-soft);line-height:1.35}
@@ -214,6 +215,16 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
 .chairbar button{padding:7px 11px;border-radius:9px;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--panel-solid)}
 .chairbar button[hidden]{display:none}
 .chairbar .primary{background:var(--dnd);border-color:var(--dnd);color:#fff}
+.chairpicker{position:absolute;left:50%;transform:translateX(-50%);top:calc(max(14px,env(safe-area-inset-top,0px)) + 52px);width:min(360px,calc(100vw - 28px));padding:14px;z-index:8;display:flex;flex-direction:column;gap:12px}
+.chairpicker[hidden]{display:none}
+.chairpicker header{display:flex;align-items:center;justify-content:space-between;font-size:15px}
+.chairpicker header button{border:0;background:transparent;color:var(--ink-soft);font-size:18px;padding:2px 5px}
+.chairpicker label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-soft)}
+.chairpicker select{font:inherit;font-size:13px;padding:8px 9px;border-radius:9px;border:1px solid var(--line);background:var(--panel-solid);color:var(--ink)}
+.chairpicker small{color:var(--ink-soft);font-size:12px}
+.chairpicker .actions{display:flex;justify-content:flex-end;gap:8px}
+.chairpicker .actions button{padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel-solid);font:inherit;font-size:13px;font-weight:600}
+.chairpicker .actions .primary{background:var(--dnd);border-color:var(--dnd);color:#fff}
 .pulse.red{background:var(--dnd);box-shadow:0 0 0 0 rgba(201,71,63,.5)}
 .zones .chair{color:var(--dnd)}
 .zones button[hidden]{display:none}
@@ -280,7 +291,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
 <div id="stage"></div>
 
 <section class="auth-panel glass" id="authPanel" aria-labelledby="authTitle">
-  <h2 id="authTitle">Văn phòng tầng 8</h2>
+  <h2 id="authTitle">ikigai office</h2>
   <p>Đăng nhập hoặc tạo tài khoản để chơi online cùng mọi người.</p>
   <div class="auth-tabs" role="tablist">
     <button type="button" id="authLoginTab" aria-selected="true">Đăng nhập</button>
@@ -299,7 +310,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
 
 <div class="ui">
   <section class="plate glass" aria-live="polite">
-    <h1>Văn phòng tầng 8</h1>
+    <h1>ikigai office</h1>
     <p class="sub">Ngồi cùng đồng nghiệp, dù ở đâu</p>
     <div class="zone">
       <div class="zone-head"><span class="zone-code" id="zCode">8</span><span class="zone-name" id="zName">Toàn tầng</span></div>
@@ -340,7 +351,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
         </div>
         <button type="button" class="profile-lock" id="profileLockBtn">Tạo nhân vật và khoá hồ sơ</button>
         <p class="profile-note" id="profileLockNote" hidden>Tên và giới tính đã khoá. Bạn chỉ có thể chỉnh sửa trang phục.</p>
-        <div class="row"><span>Hiện đồng nghiệp mẫu</span><input type="checkbox" id="npcToggle" checked></div>
+        <div class="row" id="npcRow"><span>Hiện đồng nghiệp mẫu</span><input type="checkbox" id="npcToggle" checked></div>
         <button type="button" class="profile-lock" id="logoutBtn" style="background:transparent;color:var(--dnd);border-color:var(--dnd)">Đăng xuất</button>
       </div>
     </div>
@@ -359,6 +370,13 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
     <button id="chairEnd" hidden>Kết thúc</button>
   </div>
   <audio id="chairAudio" preload="none"></audio>
+  <aside class="chairpicker glass" id="chairPicker" hidden aria-label="Chọn bản ghi âm họp với Chủ tịch">
+    <header><b>Họp với Chủ tịch</b><button id="chairPickerClose" aria-label="Đóng">✕</button></header>
+    <label for="chairTrack">Bản ghi âm<select id="chairTrack"></select></label>
+    <small id="chairTrackMeta"></small>
+    <div class="actions"><button id="chairPreview">Nghe thử</button><button id="chairStart" class="primary">Bắt đầu họp</button></div>
+    <audio id="chairPreviewAudio" preload="metadata"></audio>
+  </aside>
   <aside class="tvpanel glass" id="tvPanel" hidden aria-label="Chiếu lên TV">
     <header><b>Chiếu lên TV</b><button id="tvClose" aria-label="Đóng">✕</button></header>
     <label class="tvl">TV<select id="tvPick"></select></label>
@@ -438,7 +456,7 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
         <button id="ebDel" class="danger" title="Delete">Xóa</button>
       </span>
       <span class="eb-main">
-        <button id="ebTall" title="Đổi cách hiện tường: tự động, cao hết, hoặc thấp hết">Tường: tự động</button>
+        <button id="ebTall" title="Đổi cách hiện tường: tự động, cao hết, hoặc thấp hết">Tường: cao hết</button>
         <button id="ebDraft" hidden title="Khôi phục lần chỉnh sửa trước chưa được lưu">Khôi phục bản nháp</button>
         <button id="ebUndo" title="Ctrl+Z" disabled>Hoàn tác</button>
         <button id="ebRedo" title="Ctrl+Shift+Z" disabled>Làm lại</button>
@@ -457,11 +475,13 @@ body.edit-items .eb-sel #ebRotL,body.edit-items .eb-sel #ebRotR,body.edit-items 
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
 <script src="vendor/CSS3DRenderer.js"></script>
+<script src="runtime-config.js"></script>
 <script src="local-runtime.js"></script>
 <script>
 (function(){
 "use strict";
 const $ = id => document.getElementById(id);
+const IS_PRODUCTION=window.IKIGAI_CONFIG?.production===true;
 const store = {
   get(k,d){try{const v=localStorage.getItem('vp8:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem('vp8:'+k,JSON.stringify(v))}catch(e){}}
@@ -616,7 +636,8 @@ function navPath(ax,az,bx,bz){
   while(i<cells.length-1){let j=cells.length-1;while(j>i+1&&!navLine(cur[0],cur[1],cells[j][0],cells[j][1]))j--;cur=cells[j];out.push(cur);i=j;}
   // step out of the chair to the first free spot, and from the last free spot into the seat
   const first=Math.hypot(out[0][0]-ax,out[0][1]-az)<.05?1:0;
-  const pts=out.slice(first);if(Math.hypot(bx-pts[pts.length-1][0],bz-pts[pts.length-1][1])>.05)pts.push([bx,bz]);
+  // start and target can share one grid cell: the route may then be empty before the final step
+  const pts=out.slice(first);if(!pts.length||Math.hypot(bx-pts[pts.length-1][0],bz-pts[pts.length-1][1])>.05)pts.push([bx,bz]);
   return pts;
 }
 
@@ -1223,8 +1244,8 @@ function spawnAt(i){
   // the glass double doors on the lobby's north side are the main entrance
   const w=doors.filter(w=>w.kind==='french').sort((p,q)=>(p.side===0?0:1)-(q.side===0?0:1)||q.len-p.len)[0]||doors[0];
   let lx,lz,face;
-  if(w){const col=(i%4)-1.5,row=Math.floor(i/4)%2;const off=Math.max(-(w.len/2-.3),Math.min(w.len/2-.3,col*.7));const dep=1.3+row*.8;lx=w.mx+w.nx*dep+w.ux*off;lz=w.mz+w.nz*dep+w.uz*off;face=Math.atan2(w.nx,w.nz);}
-  else{lx=((i%4)-1.5)*.7;lz=(Math.floor(i/4)%2)*.8;face=Math.PI;}
+  if(w){const col=(i%4)-1.5,row=Math.floor(i/4)%4,shift=(Math.floor(i/16)%3)*.23;const off=Math.max(-(w.len/2-.3),Math.min(w.len/2-.3,col*.7+shift));const dep=1.3+row*.75;lx=w.mx+w.nx*dep+w.ux*off;lz=w.mz+w.nz*dep+w.uz*off;face=Math.atan2(w.nx,w.nz);}
+  else{lx=((i%4)-1.5)*.7;lz=(Math.floor(i/4)%4)*.75;face=Math.PI;}
   const [x,z]=roomToWorld(r,lx,lz);return [x,z,face+r.rot*Math.PI/2];
 }
 function roomBox(r){const odd=r.rot%2===1;const hx=(odd?r.d:r.w)/2,hz=(odd?r.w:r.d)/2;return {x0:r.x-hx,x1:r.x+hx,z0:r.z-hz,z1:r.z+hz};}
@@ -1368,7 +1389,7 @@ function zoneView(key,editView){
   const v=ROOM_DEFS[key].view;return {pos:[r.x+v[0],v[1],r.z+v[2]],tgt:[r.x,0,r.z-(key==='work'?.2:.3)]};
 }
 function blockedAt(x,z,self){for(const id of ROOM_IDS){if(id===self)continue;const b=roomBox(ROOMS[id]);if(x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true;}return false;}
-let editing=false,wallMode=['auto','up','down'].includes(store.get('wallMode','auto'))?store.get('wallMode','auto'):'auto';
+let editing=false,wallMode=['auto','up','down'].includes(store.get('wallMode','up'))?store.get('wallMode','up'):'up';
 const WALL_MODE_LABEL={auto:'Tường: tự động',up:'Tường: cao hết',down:'Tường: thấp hết'};
 function updateWalls(dt){
   const p=camera.position;
@@ -1790,7 +1811,7 @@ const me = {
   profileName: '',
   uid: null
 };
-let showNpc = store.get('npc',true);
+let showNpc = !IS_PRODUCTION&&store.get('npc',true);
 let gatherActive=false,greetActive=false,chairFig=null;
 let room=null, user=null;
 let peers=[]; // remote peers (not this tab)
@@ -1808,7 +1829,16 @@ const NPC_LINES=['Ai đi cà phê không?','Họp lúc 3 giờ nhé mọi ngư�
 
 function myName(){return me.profileName||me.nick||'Bạn';}
 function myPresence(){return {emote:me.emote&&Date.now()-me.emote.t<EMOTE_MS[me.emote.k]?me.emote:null,seat:me.seat?me.seat.id:null,spot:!me.seat&&me.spot?[+me.spot[0].toFixed(2),+me.spot[1].toFixed(2)]:null,status:me.status,shirt:me.shirt,outfit:me.outfit,nick:me.nick||null,uid:me.uid||null};}
-function pushPresence(){if(room)room.presence(myPresence()).catch(()=>{});}
+function pushPresence(){
+  if(!room)return;
+  const sent=myPresence();
+  room.presence(sent).then(r=>{
+    // Two people clicked the same seat: the server keeps whoever was first.
+    if(r&&r.seatTaken&&me.seat&&me.seat.id===r.seatTaken&&sent.seat===r.seatTaken){
+      me.seat=null;setStatus('work',true);render();toast('Ghế này vừa có người ngồi, bạn chọn ghế khác nhé');
+    }
+  }).catch(()=>{}); // not_connected: the runtime re-sends presence when the live stream opens
+}
 
 function peerName(p){
   const id=p.by||p.presence?.uid;
@@ -2634,8 +2664,9 @@ $('profileLockBtn').onclick=()=>{
 };
 $('logoutBtn').onclick=async()=>{try{const auth=await window.claude.use('auth');await auth.logout();location.reload();}catch(e){toast('Chưa đăng xuất được, thử lại nhé');}};
 syncProfileLock();
+$('npcRow').hidden=IS_PRODUCTION;
 $('npcToggle').checked=showNpc;
-$('npcToggle').onchange=e=>{showNpc=e.target.checked;store.set('npc',showNpc);render();};
+$('npcToggle').onchange=e=>{if(IS_PRODUCTION)return;showNpc=e.target.checked;store.set('npc',showNpc);render();};
 function updateMeBtn(){const n=myName();$('meName').textContent=n;$('meInit').textContent=(n.trim()[0]||'B').toUpperCase();$('meInit').style.background=me.shirt==='#f1f0ec'?'#8a8f96':'';}
 function closeMenus(){$('meMenu').classList.remove('open');$('meBtn').setAttribute('aria-expanded','false');}
 function toggleMenu(btn,menu){const open=!$(menu).classList.contains('open');closeMenus();if(open){$(menu).classList.add('open');$(btn).setAttribute('aria-expanded','true');}}
@@ -2668,7 +2699,7 @@ $('say').addEventListener('submit',e=>{
   $('msg').value='';
   if(data.ch!=='dm')getAvatar('me').say(text);
   logMsg(myName()+' (bạn)',text,tag);
-  if(room)room.emit('chat',data).catch(err=>{if(err&&err.code==='not_permitted')toast('Bạn chỉ có quyền xem, chưa gửi được tin nhắn');});
+  if(room)room.emit('chat',data).catch(err=>{const c=err&&err.code;toast(c==='slow_down'?'Bạn gửi nhanh quá, đợi vài giây rồi gửi tiếp nhé':c==='not_connected'?'Đang kết nối lại, tin nhắn chưa gửi được':c==='not_permitted'?'Bạn chỉ có quyền xem, chưa gửi được tin nhắn':'Tin nhắn chưa gửi được, bạn thử lại nhé');});
 });
 document.querySelectorAll('.emo').forEach(b=>b.onclick=()=>{
   getAvatar('me').react(b.dataset.e);
@@ -2833,9 +2864,15 @@ let wasInMeeting=false;
 setInterval(()=>{const im=inMeeting();if(im!==wasInMeeting){wasInMeeting=im;chatSig='';refreshChatTo();if(im){$('chatTo').value='meeting';updatePlaceholder();toast('Bạn đang ở phòng họp. Tin nhắn mặc định chỉ gửi cho người trong phòng');}}},800);
 
 /* ---------- chairman meeting: everyone gathers in the lobby and hears the recording ---------- */
-const CHAIR_DURATION=4464.4; // seconds in the recording
-let chair={active:false,startedAt:0,audio:null,by:''},chairDb=null,chairSeen=false;
+const CHAIR_TRACKS=Object.freeze({
+  atay:{name:'aTay',src:'/audio/aTay.m4a',duration:25.6},
+  chutich:{name:'chutich',src:'/audio/chutich.m4a',duration:406.86},
+  chutich02:{name:'chutich02',src:'/audio/chutich02.m4a',duration:25.6},
+  chutich03:{name:'chutich03',src:'/audio/chutich03.m4a',duration:3607.5}
+});
+let chair={active:false,startedAt:0,audioAt:0,track:null,by:'',sessionId:'',cooldownUntil:0},chairDb=null,chairSeen=false,chairPending=false;
 const chairAudio=$('chairAudio');
+const chairPreviewAudio=$('chairPreviewAudio');
 /* where people stand: the biggest open, walkable patch of floor in the work area, everyone facing the chairman,
    who walks to the long pedestal table in the lobby */
 let gatherPlan=null;
@@ -2914,72 +2951,163 @@ function gatherSpot(i){
 const GATHER_MAX=90000; // if not everyone makes it in 90 s, start anyway
 function chairAudioStart(){return chair.audioAt||(chair.startedAt+GATHER_MAX);}
 function chairElapsed(){return (Date.now()-chairAudioStart())/1000;}
-function chairLive(){return chair.active&&!!chair.audio&&chairElapsed()<CHAIR_DURATION+3;}
-let audioAtSent=0,chairEnding=0;
+function chairTrack(key=chair.track){return typeof key==='string'?CHAIR_TRACKS[key]||null:null;}
+function chairDuration(){return chairTrack()?.duration||0;}
+function chairLive(){return chair.active&&!!chairTrack()&&chairElapsed()<chairDuration()+3;}
+let audioAtSent='',chairEnding=0,chairEndRun=0,chairVersion=0,gatherSession='',chairAutoStopAt=0;
+function restorePreviousSeat(resetStatus=false){
+  const id=me.prevSeatId;
+  if(!id){if(resetStatus&&me.status==='meet'){setStatus('work',true);pushPresence();}return;}
+  me.prevSeatId=null;
+  const s=seatMap.get(id),free=s&&![...avatars.values()].some(a=>a.key!=='me'&&a.seat===s);
+  if(free){me.seat=s;me.spot=null;const auto={meeting:'meet',pantry:'brk'}[s.zone];setStatus(auto||'work',true);}
+  else{me.seat=null;setStatus('work',true);}
+  pushPresence();
+}
+/* Finish the post-meeting applause/bow immediately (a new meeting or a visit needs the floor). */
+function finishChairEnding(){
+  if(!gatherActive||chairLive())return;
+  chairEndRun++;chairEnding=0;gatherActive=false;gatherPlan=null;gatherSession='';audioAtSent='';
+  stopFootsteps('chair');stopApplause();restorePreviousSeat(true);render();
+}
 function gatherCount(){let n=0,ok=0;for(const a of avatars.values())if(a.gatherIdx!=null){n++;if(!a.anim)ok++;}const chOk=chairFig&&!chairFig.anim;return {n,ok,chOk};}
 function fmtT(s){s=Math.max(0,Math.floor(s));const m=Math.floor(s/60),ss=s%60;return `${m}:${String(ss).padStart(2,'0')}`;}
+for(const [key,track] of Object.entries(CHAIR_TRACKS)){
+  const option=document.createElement('option');option.value=key;option.textContent=track.name;$('chairTrack').append(option);
+}
+function selectedChairTrack(){return chairTrack($('chairTrack').value);}
+function stopChairPreview(){chairPreviewAudio.pause();chairPreviewAudio.removeAttribute('src');chairPreviewAudio.load();$('chairPreview').textContent='Nghe thử';}
+function updateChairPicker(){
+  const track=selectedChairTrack();$('chairTrackMeta').textContent=track?`Thời lượng ${fmtT(track.duration)}`:'';
+  if(chairPreviewAudio.getAttribute('src')&&!chairPreviewAudio.src.endsWith(track?.src||''))stopChairPreview();
+}
+function closeChairPicker(){stopChairPreview();$('chairPicker').hidden=true;}
+function openChairPicker(){
+  if(!canEditLayout||!chairDb)return;
+  if(chairPending)return;
+  if(visit.active||Date.now()<visit.cooldownUntil){toast(visit.active?'Hãy kết thúc tiếp khách trước':'Đoàn khách đang rời đi, vui lòng đợi một chút');return;}
+  if(Date.now()<chair.cooldownUntil){toast('Cuộc họp đang kết thúc, vui lòng đợi một chút');return;}
+  const saved=store.get('chairTrack','chutich');$('chairTrack').value=chairTrack(saved)?saved:(chair.track||'chutich');
+  updateChairPicker();$('chairPicker').hidden=false;
+}
+$('chairTrack').onchange=()=>{store.set('chairTrack',$('chairTrack').value);updateChairPicker();};
+$('chairPickerClose').onclick=closeChairPicker;
+$('chairPreview').onclick=()=>{
+  if(gameMuted){toast('Bạn đang tắt tiếng game');return;}
+  const track=selectedChairTrack();if(!track)return;
+  if(chairPreviewAudio.getAttribute('src')&&chairPreviewAudio.src.endsWith(track.src)&&!chairPreviewAudio.paused){chairPreviewAudio.pause();$('chairPreview').textContent='Nghe thử';return;}
+  if(!chairPreviewAudio.src.endsWith(track.src)){chairPreviewAudio.src=track.src;chairPreviewAudio.volume=1;}
+  chairPreviewAudio.play().then(()=>{$('chairPreview').textContent='Dừng nghe thử';}).catch(e=>{
+    if(e&&e.name==='AbortError')return; // a newer preview replaced this one
+    const unsupported=(chairPreviewAudio.error&&chairPreviewAudio.error.code===4)||(e&&e.name==='NotSupportedError');
+    toast(unsupported?'Trình duyệt không hỗ trợ định dạng của bản ghi âm này (hãy dùng AAC/MP3)':e&&e.name==='NotAllowedError'?'Trình duyệt đang chặn phát âm thanh, bấm lại lần nữa nhé':'Trình duyệt chưa phát được bản ghi âm này');
+  });
+};
+chairPreviewAudio.onended=()=>{$('chairPreview').textContent='Nghe thử';};
+function liveActionError(err,feature){
+  const code=err&&err.code;
+  if(code==='transitioning')return feature==='chairman'?'Cuộc họp đang kết thúc, vui lòng đợi một chút':'Đoàn khách đang rời đi, vui lòng đợi một chút';
+  if(code==='other_live_active')return feature==='chairman'?'Hãy kết thúc tiếp khách trước':'Hãy kết thúc họp với Chủ tịch trước';
+  if(code==='other_live_transitioning')return 'Hoạt động trước đang kết thúc, vui lòng đợi một chút';
+  if(code==='bad_chair_track')return 'Bản ghi âm không hợp lệ';
+  if(code==='not_permitted')return 'Chỉ super admin được dùng chức năng này';
+  return 'Chưa thực hiện được, bạn thử lại nhé';
+}
+function normalizeChair(d){
+  const track=d&&typeof d.track==='string'&&chairTrack(d.track)?d.track:null;
+  const startedAt=Number(d&&d.startedAt)||0;
+  return {active:!!(d&&d.active),startedAt,audioAt:Number(d&&d.audioAt)||0,track,
+    by:d&&typeof d.by==='string'?d.by.slice(0,40):'',sessionId:d&&typeof d.sessionId==='string'?d.sessionId.slice(0,64):(d&&d.active?'legacy:'+startedAt:''),
+    cooldownUntil:Number(d&&d.cooldownUntil)||0};
+}
+function updateChairControls(live){
+  const b=$('chairBtn'),cooling=Date.now()<chair.cooldownUntil;
+  b.hidden=!(canEditLayout&&chairDb);b.disabled=chairPending||(!chair.active&&(cooling||visit.active||Date.now()<visit.cooldownUntil));
+  b.querySelector('span').textContent=chairPending?'Đang xử lý…':chair.active?'Kết thúc họp chủ tịch':cooling?'Đang kết thúc họp…':'Họp với chủ tịch';
+  $('chairEnd').hidden=!(canEditLayout&&chairDb);$('chairEnd').disabled=chairPending;
+  $('chairStart').disabled=chairPending||cooling||visit.active||Date.now()<visit.cooldownUntil;
+  if((chair.active||cooling)&&!$('chairPicker').hidden)closeChairPicker();
+}
 function applyChair(){
+  const track=chairTrack(),duration=chairDuration();
   const live=chairLive();
+  if(live&&gatherActive&&(chairEnding||gatherSession!==chair.sessionId)){
+    // A new meeting arrived while the previous one was still applauding/bowing (or a run was missed
+    // while offline): cancel the old ending and run the start sequence again for this session.
+    chairEndRun++;chairEnding=0;stopApplause();gatherActive=false;
+  }
   if(live&&!gatherActive){
-    gatherActive=true;chairEnding=0;gatherPlan=null;audioAtSent=0;startFootsteps();
+    chairEndRun++;chairEnding=0;gatherActive=true;gatherSession=chair.sessionId;gatherPlan=null;audioAtSent='';startFootsteps('chair');
+    if(chairFig&&chairFig.leaving){chairFig.dispose();chairFig=null;}
     if(me.seat){me.prevSeatId=me.seat.id;me.seat=null;}setStatus('meet',true);pushPresence();toast('Chủ tịch triệu tập, mọi người tập trung ở khu làm việc');
     render();
   }else if(!live&&gatherActive){
-    stopFootsteps();
+    stopFootsteps('chair');
     if(!chairEnding){ // the meeting is over: everyone applauds, the staff bow to the chairman (he doesn't bow), then he leaves
-      chairEnding=Date.now();startApplause(3200);
+      chairEnding=Date.now();const endingRun=++chairEndRun;startApplause(3200);
       const crowd=[...avatars.values()].filter(a=>a.gatherIdx!=null);
       crowd.forEach(a=>{a.lookAt=null;a.nod=false;a.startEmote('clap',3200);});
       if(chairFig){chairFig.talk=0;chairFig.startEmote('clap',3200);}
-      setTimeout(()=>{const cp=chairFig?[chairFig.root.position.x,chairFig.root.position.z]:null;crowd.forEach((a,i)=>setTimeout(()=>a.startEmote('bow',1700,cp),(i*53)%300));},3300);
+      setTimeout(()=>{if(endingRun!==chairEndRun||chairLive())return;const cp=chairFig?[chairFig.root.position.x,chairFig.root.position.z]:null;
+        crowd.forEach((a,i)=>setTimeout(()=>{if(endingRun===chairEndRun&&!chairLive())a.startEmote('bow',1700,cp);},(i*53)%300));},3300);
       toast('Cuộc họp kết thúc, mọi người vỗ tay');
     }else if(Date.now()-chairEnding>5600){ // then the chairman walks out of the main door and everyone goes back to their seat
-      chairEnding=0;gatherActive=false;gatherPlan=null;stopApplause();render();
-      const s=me.prevSeatId&&seatMap.get(me.prevSeatId);me.prevSeatId=null;
-      if(s&&![...avatars.values()].some(a=>a.key!=='me'&&a.seat===s))sitAt(s);else{setStatus('work',true);pushPresence();}
+      finishChairEnding();
     }
   }
   $('chairBar').hidden=!live;
   if(live){
-    const want='/_blob/'+chair.audio,t=chairElapsed();
+    const want=track.src,t=chairElapsed();
     if(!chairAudio.src.endsWith(want)){chairAudio.preload='auto';chairAudio.src=want;} // buffer while people walk over
     if(t<0){ // still gathering: no sound yet
       if(!chairAudio.paused)chairAudio.pause();
       if(chairFig)chairFig.talk=0;
       const c=gatherCount();$('chairTitle').textContent='Chủ tịch triệu tập';
       $('chairTime').textContent=`Đang tập trung, ${c.ok}/${c.n} người đã tới`;$('chairPlay').hidden=true;
-      if(c.n&&c.ok>=c.n&&c.chOk){stopFootsteps();if(canEditLayout&&!chair.audioAt&&!audioAtSent){audioAtSent=1;chairDb.doc('live/chairman').set({...chair,audioAt:Date.now()+2500}).catch(()=>{audioAtSent=0;});}}
+      if(c.n&&c.ok>=c.n&&c.chOk){stopFootsteps('chair');if(canEditLayout&&!chair.audioAt&&audioAtSent!==chair.sessionId){
+        audioAtSent=chair.sessionId;tvAdmin?.liveAction('chairman','ready',{sessionId:chair.sessionId}).catch(()=>{if(audioAtSent===chair.sessionId)audioAtSent='';});}}
     }else{
-      stopFootsteps();$('chairTitle').textContent='Đang họp với Chủ tịch';
+      stopFootsteps('chair');$('chairTitle').textContent='Đang họp với Chủ tịch';
       if(chairFig&&!chairFig.anim){chairFig.talk=1;const cp=chairFig.root.position;for(const a of avatars.values())if(a.gatherIdx!=null&&!a.anim){a.lookAt=[cp.x,cp.z];a.nod=Math.random()<.02?!a.nod:a.nod;}}
       if(Math.abs(chairAudio.currentTime-t)>2&&chairAudio.readyState>0){try{chairAudio.currentTime=t;}catch(e){}}
       chairAudio.muted=gameMuted;chairAudio.volume=1;
       if(gameMuted)$('chairPlay').hidden=true;
       if(chairAudio.paused&&!gameMuted){chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>{$('chairPlay').hidden=false;});}
-      $('chairTime').textContent=`${fmtT(t)} / ${fmtT(CHAIR_DURATION)}`;
+      $('chairTime').textContent=`${fmtT(t)} / ${fmtT(duration)}`;
     }
   }else if(chairAudio.getAttribute('src')){chairAudio.pause();chairAudio.removeAttribute('src');chairAudio.load();} // silence outside the meeting
-  $('chairBtn').hidden=!(canEditLayout&&chairDb);
-  $('chairBtn').querySelector('span').textContent=live?'Kết thúc họp chủ tịch':'Họp với chủ tịch';
-  $('chairEnd').hidden=!(canEditLayout&&chairDb);
-  if(live&&canEditLayout&&chairElapsed()>=CHAIR_DURATION){setChair(false);}
+  updateChairControls(live);
+  // The recording is over (or the stored track is unusable): the admin's client closes the meeting,
+  // also when the admin only opens the office after it should have ended. Retries are rate limited.
+  if(chair.active&&canEditLayout&&!chairPending&&Date.now()>=chairAutoStopAt&&(!track||chairElapsed()>=duration)){
+    chairAutoStopAt=Date.now()+5000;setChair(false,null,true);
+  }
 }
 chairAudio.addEventListener('loadedmetadata',()=>{if(chairLive()&&chairElapsed()>=0){try{chairAudio.currentTime=chairElapsed();}catch(e){}}});
 setInterval(applyChair,1000);
 $('chairPlay').onclick=()=>{if(gameMuted)return;chairAudio.play().then(()=>{$('chairPlay').hidden=true;}).catch(()=>toast('Trình duyệt chưa cho phát âm thanh, bấm lại lần nữa nhé'));};
-async function setChair(on){
-  if(!chairDb||!canEditLayout)return;
-  if(on&&!chair.audio){toast('Chưa có đoạn ghi âm để phát');return;}
-  try{await chairDb.doc('live/chairman').set({...chair,active:on,startedAt:on?Date.now():chair.startedAt,audioAt:0,by:myName()});}
-  catch(e){toast('Chưa bắt đầu được, bạn thử lại nhé');}
+async function setChair(on,trackKey,silent){
+  if(!chairDb||!canEditLayout||!tvAdmin||chairPending)return;
+  const key=on&&chairTrack(trackKey)?trackKey:chair.track;
+  if(on&&!chairTrack(key)){toast('Hãy chọn một bản ghi âm');return;}
+  chairPending=true;updateChairControls(chairLive());
+  try{
+    const result=await tvAdmin.liveAction('chairman',on?'start':'stop',{track:key||'',sessionId:chair.sessionId,by:myName()});
+    // The snapshot may already have delivered a newer state; never step back to an older one.
+    const v=Number(result&&result.version)||0;
+    if(result&&result.state&&v>=chairVersion){chairVersion=v;chair=normalizeChair(result.state);}
+  }catch(e){if(!silent)toast(liveActionError(e,'chairman'));}
+  finally{chairPending=false;applyChair();applyVisit();}
 }
-$('chairBtn').onclick=()=>setChair(!chairLive());
+$('chairStart').onclick=()=>{if(chairPending)return;const key=$('chairTrack').value;if(!chairTrack(key))return;store.set('chairTrack',key);closeChairPicker();setChair(true,key);};
+$('chairBtn').onclick=()=>{if(chairPending)return;if(chair.active){closeChairPicker();setChair(false);}else openChairPicker();};
 $('chairEnd').onclick=()=>setChair(false);
 function subscribeChair(db){
   chairDb=db;
   db.doc('live/chairman').onSnapshot(snap=>{
-    const d=snap.exists?snap.data():null;
-    chair={active:!!(d&&d.active),startedAt:Number(d&&d.startedAt)||0,audioAt:Number(d&&d.audioAt)||0,audio:d&&typeof d.audio==='string'&&/^[0-9a-f]{32}$/.test(d.audio)?d.audio:null,by:d&&typeof d.by==='string'?d.by.slice(0,40):''};
+    const d=snap.exists?snap.data():null,v=Number(snap.version)||0;
+    if(v&&v<chairVersion)return; // older than what an action response already applied
+    chairVersion=v;chair=normalizeChair(d);
     const first=!chairSeen;chairSeen=true;
     applyChair();
   },err=>console.warn('chair',err));
@@ -3050,6 +3178,7 @@ function setTvSuppressed(value){
 /* One local switch controls every sound source in the game. */
 let gameMuted=store.get('gameMuted',store.get('tvMuted',false))===true;
 let sfxCtx=null,footstepTimer=null,applauseTimer=null;
+const footstepOwners=new Set();
 function tvSilent(){return gameMuted||gatherActive;}
 function setGameMuted(value){
   gameMuted=!!value;store.set('gameMuted',gameMuted);
@@ -3057,7 +3186,8 @@ function setGameMuted(value){
   button.textContent=gameMuted?'🔇':'🔊';button.setAttribute('aria-label',label);
   button.setAttribute('aria-pressed',String(gameMuted));button.title=label;
   chairAudio.muted=gameMuted;
-  if(gameMuted)$('chairPlay').hidden=true;
+  chairPreviewAudio.muted=gameMuted;
+  if(gameMuted){$('chairPlay').hidden=true;stopChairPreview();}
   if(sfxCtx)(gameMuted?sfxCtx.suspend():sfxCtx.resume()).catch(()=>{});
   for(const c of casts.values()){
     if(c.kind==='video'&&c.el)c.el.muted=tvSilent();
@@ -3263,12 +3393,21 @@ $('tvTabFile').onclick=()=>tvTab('file');$('tvTabYt').onclick=()=>tvTab('yt');
 $('tvOpenBtn').onclick=()=>openTv();
 
 /* ---------- receiving visitors: a small group comes in through the main door, talks in the lobby, then the bosses show them round ---------- */
-let visit={active:false,startedAt:0,seed:0},visitDb=null,visitGroup=[],visitRun=0;
+let visit={active:false,startedAt:0,seed:0,sessionId:'',cooldownUntil:0},visitDb=null,visitGroup=[],visitRun=0,visitPending=false,visitAutoStopAt=0,visitVersion=0;
 let visitStage='none';
 const BOSSES=[['Đồng chí Tuân','#6e9eff'],['Đồng chí Long','#6e9eff']];
-const GUESTS=['Khách Nam','Khách Vy','Khách Minh','Khách Thảo','Khách Bảo'];
+const GUESTS=[
+  ['Quang Huy','male'],['Mai Linh','female'],['Đức Minh','male'],['Bảo Ngọc','female'],['Hoàng Nam','male'],['Thu Hà','female'],
+  ['James Walker','male'],['Emily Carter','female'],['Daniel Brooks','male'],['Olivia Bennett','female'],['Michael Reed','male'],['Sophia Turner','female'],
+  ['Haruto Sato','male'],['Yui Tanaka','female'],['Ren Kobayashi','male'],['Aoi Nakamura','female'],['Kenta Suzuki','male'],['Sakura Ito','female']
+];
+function randomGuestNames(rnd,count){
+  const pool=GUESTS.map(x=>[...x]);
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  return pool.slice(0,count);
+}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function arrived(list,maxMs){const t0=performance.now();while(performance.now()-t0<(maxMs||40000)){if(list.every(v=>!v.av.anim))return;await wait(200);}}
+async function arrived(list,maxMs,alive=()=>true){const t0=performance.now();while(alive()&&performance.now()-t0<(maxMs||40000)){if(list.every(v=>!v.av.anim))return;await wait(200);}}
 function getSfxContext(){
   if(sfxCtx)return sfxCtx;
   const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
@@ -3286,8 +3425,9 @@ function noiseBurst(kind){
   gain.gain.setValueAtTime(kind==='step'?.12:.16,c.currentTime);gain.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
   src.buffer=b;src.connect(filter);filter.connect(gain);gain.connect(c.destination);src.start();src.stop(c.currentTime+dur+.01);
 }
-function startFootsteps(){if(footstepTimer)return;noiseBurst('step');footstepTimer=setInterval(()=>noiseBurst('step'),340);}
-function stopFootsteps(){if(footstepTimer){clearInterval(footstepTimer);footstepTimer=null;}}
+function startFootsteps(owner='general'){footstepOwners.add(owner);if(footstepTimer)return;noiseBurst('step');footstepTimer=setInterval(()=>noiseBurst('step'),340);}
+function stopFootsteps(owner='general'){footstepOwners.delete(owner);if(!footstepOwners.size&&footstepTimer){clearInterval(footstepTimer);footstepTimer=null;}}
+function stopFootstepsByPrefix(prefix){for(const owner of [...footstepOwners])if(owner.startsWith(prefix))footstepOwners.delete(owner);if(!footstepOwners.size&&footstepTimer){clearInterval(footstepTimer);footstepTimer=null;}}
 function startApplause(ms){
   if(applauseTimer)clearInterval(applauseTimer);
   const until=performance.now()+(ms||3200),burst=()=>{
@@ -3297,19 +3437,19 @@ function startApplause(ms){
   burst();applauseTimer=setInterval(burst,170);
 }
 function stopApplause(){if(applauseTimer){clearInterval(applauseTimer);applauseTimer=null;}}
-async function moveGroup(list,targets,alive){
+async function moveGroup(list,targets,alive,footstepOwner){
   if(!list.length)return;
-  startFootsteps();
+  startFootsteps(footstepOwner);
   list.forEach((v,i)=>{const p=targets[i]||targets[targets.length-1];if(p&&alive())v.av.walkTo(p[0],p[1],p[2]);});
-  await arrived(list);stopFootsteps();
+  await arrived(list,40000,alive);stopFootsteps(footstepOwner);
   if(!alive())return;
 }
-function makeVisitor(key,name,outfit,gold){
-  outfit={...outfit,gender:FEMALE_NAMES.has(name)?'female':'male'};
+function makeVisitor(key,name,outfit,gold,gender){
+  outfit={...outfit,gender:gender==='female'||(!gender&&FEMALE_NAMES.has(name))?'female':'male'};
   const av=new Avatar(key);av.setLook(name,'work',SHIRT_BLUE,false,outfit);av.ring.material.color.set(gold?'#b88a4a':'#8a94a6');
   return {key,name,av};
 }
-function clearVisit(){stopFootsteps();visitGroup.forEach(v=>v.av.dispose());visitGroup=[];visitStage='none';}
+function clearVisit(){stopFootstepsByPrefix('visit:');visitGroup.forEach(v=>v.av.dispose());visitGroup=[];visitStage='none';greetActive=false;restorePreviousSeat();}
 function lobbySnap(x,z){
   const r=ROOMS.lobby,margin=.85,[lx,lz]=worldToRoom(r,x,z);
   const cx=Math.max(-r.w/2+margin,Math.min(r.w/2-margin,lx));
@@ -3334,49 +3474,49 @@ function tourStops(){
   return [{p,look:[r.x,r.z],room:'lobby'}];
 }
 /* the office stands, walks over to the work area facing the visitors, bows together, then goes back to work */
-async function greetVisitors(meet,G,alive){
+async function greetVisitors(meet,G,alive,footstepOwner){
   greetActive=true;
   if(me.seat){me.prevSeatId=me.seat.id;me.seat=null;pushPresence();}
   let plan=planGather(meet);
   const staff=[...avatars.values()].sort((a,b)=>a.key==='me'?-1:b.key==='me'?1:a.key<b.key?-1:1);
   if(plan.spots.length<staff.length)plan=planGather(meet,true);
   const staffTargets=staff.map((a,i)=>{const p=plan.spots[i]||navSnap(meet[0]-2-(i%4)*.8,meet[1]+Math.floor(i/4)*.9);return [p[0],p[1],Math.atan2(meet[0]-p[0],meet[1]-p[1])];});
-  startFootsteps();staff.forEach((a,i)=>{const p=staffTargets[i];if(alive())a.walkTo(p[0],p[1],p[2]);});
+  startFootsteps(footstepOwner);staff.forEach((a,i)=>{const p=staffTargets[i];if(alive())a.walkTo(p[0],p[1],p[2]);});
   toast('Có khách, mọi người ra chào');
   // guests wait in the lobby, looking toward the people coming over
   G.forEach(v=>{v.av.lookAt=plan.spots.length?plan.spots[0]:null;});
   const t0=performance.now();await wait(600);
   while(performance.now()-t0<30000&&alive()&&staff.some(a=>a.anim))await wait(250);
-  stopFootsteps();
-  if(!alive()){greetActive=false;render();return;}
+  stopFootsteps(footstepOwner);
+  if(!alive())return;
   // one bow together; the guests bow back
-  staff.forEach((a,i)=>setTimeout(()=>{a.lookAt=null;a.startEmote('bow',1700,meet);},(i*61)%400));
+  staff.forEach((a,i)=>setTimeout(()=>{if(alive()){a.lookAt=null;a.startEmote('bow',1700,meet);}},(i*61)%400));
   G.forEach(v=>{v.av.lookAt=null;v.av.startEmote('bow',1700,plan.spots[0]||null);});
   await wait(2300);
-  greetActive=false;render(); // everyone walks back to their seat
-  const s=me.prevSeatId&&seatMap.get(me.prevSeatId);me.prevSeatId=null;
-  if(s&&![...avatars.values()].some(a=>a.key!=='me'&&a.seat===s))sitAt(s);
+  if(!alive())return;
+  greetActive=false;restorePreviousSeat();render(); // everyone walks back to their seat
 }
-async function runVisit(startedAt,seed){
-  const run=++visitRun;const alive=()=>run===visitRun&&visit.active&&visit.startedAt===startedAt;
+async function runVisit(startedAt,seed,sessionId){
+  const run=++visitRun,footstepOwner='visit:'+run;const alive=()=>run===visitRun&&visit.active&&visit.sessionId===sessionId;
   clearVisit();
   const rnd=seeded(seed),door=mainDoor();if(!door)return;
-  const withChair=rnd()<.35&&!gatherActive,guests=1+Math.floor(rnd()*3)-(withChair?1:0);
+  const withChair=rnd()<.35,guests=1+Math.floor(rnd()*3)-(withChair?1:0);
   const vest={sleeve:'long',pants:'black',vest:true};
   visitGroup.push(makeVisitor('vb0',BOSSES[0][0],vest,true),makeVisitor('vb1',BOSSES[1][0],{...vest,pants:'navy'},true));
   if(withChair)visitGroup.push(makeVisitor('vchair','Chủ tịch',vest,true));
-  for(let i=0;i<Math.max(1,guests);i++)visitGroup.push(makeVisitor('vg'+i,GUESTS[Math.floor(rnd()*GUESTS.length)],{sleeve:'long',pants:rnd()<.5?'black':'navy',vest:true},false));
+  const guestNames=randomGuestNames(seeded((seed^0x9e3779b9)>>>0),Math.max(1,guests));
+  guestNames.forEach(([name,gender],i)=>visitGroup.push(makeVisitor('vg'+i,name,{sleeve:'long',pants:rnd()<.5?'black':'navy',vest:true},false,gender)));
   const G=visitGroup;
   // outside the door, in single file
   G.forEach((v,i)=>{const p=door.out(1.4+i*.7,(i%2?.3:-.3));v.av.walkTo(p[0],p[1],door.faceIn,true);v.av.placedOnce=true;});
   // walk in one after another, the doors open for them
   const lobby=ROOMS.lobby,meet=lobbySnap(...door.in(3.2));
   const ring=G.map((v,i)=>lobbySnap(meet[0]+Math.cos(i/G.length*Math.PI*2)*.9,meet[1]+Math.sin(i/G.length*Math.PI*2)*.9));
-  startFootsteps();
-  for(let i=0;i<G.length;i++){if(!alive()){stopFootsteps();return;}G[i].av.walkTo(ring[i][0],ring[i][1],Math.atan2(meet[0]-ring[i][0],meet[1]-ring[i][1]));await wait(650);}
-  await arrived(G);stopFootsteps();if(!alive())return;
+  startFootsteps(footstepOwner);
+  for(let i=0;i<G.length;i++){if(!alive()){stopFootsteps(footstepOwner);return;}G[i].av.walkTo(ring[i][0],ring[i][1],Math.atan2(meet[0]-ring[i][0],meet[1]-ring[i][1]));await wait(650);}
+  await arrived(G,40000,alive);stopFootsteps(footstepOwner);if(!alive())return;
   visitStage='lobby';constrainVisitGroup();
-  await greetVisitors(meet,G,alive);if(!alive())return;
+  await greetVisitors(meet,G,alive,footstepOwner);if(!alive())return;
   // greeting and small talk in the lobby, 5–10 s, taking turns
   const talkFor=5000+rnd()*5000,t0=performance.now();let sp=0;
   while(performance.now()-t0<talkFor&&alive()){
@@ -3394,7 +3534,7 @@ async function runVisit(startedAt,seed){
       targets.push([p[0],p[1],Math.atan2(st.look[0]-p[0],st.look[1]-p[1])]);});
     // the leader points the way now and then while walking
     const pointer=setInterval(()=>{if(!alive()){clearInterval(pointer);return;}lead.av.pointAt=lead.av.anim&&Math.random()<.5?[st.look[0],st.look[1]]:null;},1400);
-    await moveGroup(G,targets,alive);clearInterval(pointer);lead.av.pointAt=null;if(!alive())return;
+    await moveGroup(G,targets,alive,footstepOwner);clearInterval(pointer);lead.av.pointAt=null;if(!alive())return;
     // show the area: point, explain, guests look around and nod
     lead.av.pointAt=st.look;G.slice(1).forEach(v=>{v.av.lookAt=st.look;});await wait(1600);lead.av.pointAt=null;
     lead.av.talk=.8;lead.av.lookAt=null;
@@ -3407,39 +3547,63 @@ async function runVisit(startedAt,seed){
   // back to the door and out
   visitStage='exiting';
   const exitTargets=G.map((v,i)=>{const p=lobbySnap(...door.in(1.6+(i%3)*.6,((i%2)?.4:-.4)));return [p[0],p[1],door.faceOut];});
-  await moveGroup(G,exitTargets,alive);if(!alive())return;
+  await moveGroup(G,exitTargets,alive,footstepOwner);if(!alive())return;
   // goodbye at the door, like the end of the chairman's meeting: bow, wave, then out through the main door
   const fc=[door.cx+door.nx*.4,door.cz+door.nz*.4];
   G.forEach((v,i)=>{const p=v.av.root.position;v.av.root.rotation.y=Math.atan2(G[(i+1)%G.length].av.root.position.x-p.x,G[(i+1)%G.length].av.root.position.z-p.z);v.av.startEmote('bow',1700);});
   await wait(1900);if(!alive())return;
   G.forEach(v=>v.av.startEmote('wave',1800));await wait(1900);if(!alive())return;
-  startFootsteps();
-  for(let i=0;i<G.length;i++){const p=door.out(2.2+i*.5);G[i].av.walkTo(p[0],p[1],door.faceOut);await wait(500);}
-  await arrived(G,20000);stopFootsteps();
+  startFootsteps(footstepOwner);
+  for(let i=0;i<G.length;i++){if(!alive()){stopFootsteps(footstepOwner);return;}const p=door.out(2.2+i*.5);G[i].av.walkTo(p[0],p[1],door.faceOut);await wait(500);}
+  await arrived(G,20000,alive);stopFootsteps(footstepOwner);
+  if(!alive())return;
   clearVisit();
-  if(canEditLayout&&visitDb&&visit.active&&visit.startedAt===startedAt)visitDb.doc('live/visit').set({...visit,active:false}).catch(()=>{});
+  if(canEditLayout&&tvAdmin&&visit.active&&visit.sessionId===sessionId)tvAdmin.liveAction('visit','complete',{sessionId}).catch(()=>{});
 }
-let visitStartedFor=0;
+let visitStartedFor='';
+function normalizeVisit(d){
+  const startedAt=Number(d&&d.startedAt)||0;
+  return {active:!!(d&&d.active),startedAt,seed:Number(d&&d.seed)||1,
+    sessionId:d&&typeof d.sessionId==='string'?d.sessionId.slice(0,64):(d&&d.active?'legacy:'+startedAt:''),
+    cooldownUntil:Number(d&&d.cooldownUntil)||0};
+}
 function applyVisit(){
-  const b=$('visitBtn');if(b){b.hidden=!(canEditLayout&&visitDb);b.querySelector('span').textContent=visit.active?'Kết thúc tiếp khách':'Tiếp khách';}
+  const cooling=Date.now()<visit.cooldownUntil,b=$('visitBtn');if(b){b.hidden=!(canEditLayout&&visitDb);
+    b.disabled=visitPending||(!visit.active&&(cooling||chair.active||Date.now()<chair.cooldownUntil));
+    b.querySelector('span').textContent=visitPending?'Đang xử lý…':visit.active?'Kết thúc tiếp khách':cooling?'Đang tiễn khách…':'Tiếp khách';}
+  if(visit.active&&!$('chairPicker').hidden)closeChairPicker();
   if(tvSuppressed!==visit.active)setTvSuppressed(visit.active);
   const fresh=visit.active&&Date.now()-visit.startedAt<6*60000;
-  if(fresh&&visitStartedFor!==visit.startedAt){visitStartedFor=visit.startedAt;runVisit(visit.startedAt,visit.seed);toast('Có đoàn khách đến, các sếp ra đón ở sảnh');}
-  if(!visit.active&&visitGroup.length){visitRun++;clearVisit();}
+  if(fresh&&visitStartedFor!==visit.sessionId){
+    visitStartedFor=visit.sessionId;
+    finishChairEnding(); // a meeting that is still applauding must hand the floor over first
+    runVisit(visit.startedAt,visit.seed,visit.sessionId);toast('Có đoàn khách đến, các sếp ra đón ở sảnh');
+  }
+  if(!visit.active&&(visitGroup.length||greetActive)){visitRun++;clearVisit();render();}
+  // A visit left running while nobody was watching (older than its 6-minute window) is closed by the admin.
+  if(visit.active&&!fresh&&!visitGroup.length&&canEditLayout&&tvAdmin&&!visitPending&&Date.now()>=visitAutoStopAt){
+    visitAutoStopAt=Date.now()+5000;tvAdmin.liveAction('visit','complete',{sessionId:visit.sessionId}).catch(()=>{});
+  }
 }
 function subscribeVisit(db){
   visitDb=db;
   db.doc('live/visit').onSnapshot(snap=>{
-    const d=snap.exists?snap.data():null;
-    visit={active:!!(d&&d.active),startedAt:Number(d&&d.startedAt)||0,seed:Number(d&&d.seed)||1};
+    const d=snap.exists?snap.data():null,v=Number(snap.version)||0;
+    if(v&&v<visitVersion)return;
+    visitVersion=v;visit=normalizeVisit(d);
     applyVisit();
   },err=>console.warn('visit',err));
 }
 setInterval(()=>applyVisit(),1500);
 async function toggleVisit(){
-  if(!visitDb||!canEditLayout)return;
-  try{await visitDb.doc('live/visit').set(visit.active?{active:false,startedAt:visit.startedAt,seed:visit.seed}:{active:true,startedAt:Date.now(),seed:Math.floor(Math.random()*1e9)});}
-  catch(e){toast('Chưa bắt đầu được, bạn thử lại nhé');}
+  if(!visitDb||!canEditLayout||!tvAdmin||visitPending)return;
+  visitPending=true;applyVisit();
+  try{
+    const result=await tvAdmin.liveAction('visit',visit.active?'stop':'start',{sessionId:visit.sessionId,by:myName()});
+    const v=Number(result&&result.version)||0;
+    if(result&&result.state&&v>=visitVersion){visitVersion=v;visit=normalizeVisit(result.state);}
+  }catch(e){toast(liveActionError(e,'visit'));}
+  finally{visitPending=false;applyVisit();applyChair();}
 }
 
 /* ---------- npc life ---------- */
